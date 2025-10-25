@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-time-service
+  namespace: dev
+  labels:
+    app: simple-time-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-time-service
+  template:
+    metadata:
+      labels:
+        app: simple-time-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+    spec:
+      containers:
+      - name: simple-time-service
+        image: simple-time-service:latest  # Jenkins will replace tag with BUILD_NUMBER
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: APP_ENV
+          value: dev
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
